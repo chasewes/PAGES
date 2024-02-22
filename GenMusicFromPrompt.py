@@ -24,23 +24,31 @@ class GenMusicFromPrompt:
         )
     
     def generate_from_list(self, prompts, **kwargs):
+        # If want to start a new song pass in song=None
+        # If want to continue from the previous song pass in song=<wav_form_ndarray>
+        
         for prompt in prompts:
             self.generate(prompt, **kwargs)
+            if 'song' in kwargs:
+                del kwargs['song']
+                # kwargs['song'] = self.song
         return self.song
     
     def generate(self, prompt, **kwargs): # prev_song_duration=2, sample_rate=32000,
-        if self.song is None:
-            self.generate(prompt)
-
+        # If want to start a new song pass in song=None
+        # If want to continue from the previous song pass in song=<wav_form_ndarray>
+        
         
         sample_rate = self.sample_rate if 'sample_rate' not in kwargs else kwargs['sample_rate']
         prev_song_duration = self.previous_song_duration if 'prev_song_duration' not in kwargs else kwargs['prev_song_duration']
-        
         
         if 'duration' not in kwargs and self.song is not None:
             kwargs['duration'] = self.duration + prev_song_duration
         
         self.set_generation_params(**kwargs)
+        
+        if 'song' in kwargs:
+            self.song = kwargs['song']
         
         # Generate the start of a song
         if self.song is None:
@@ -72,3 +80,4 @@ class GenMusicFromPrompt:
             display_audio(self.song)
         else:
             raise ValueError("No song to display. Please generate a song first.")
+        
