@@ -1,16 +1,23 @@
 from audiocraft.models import MusicGen
 from audiocraft.models import MultiBandDiffusion
 from audiocraft.utils.notebook import display_audio
+import torchaudio
 import torch
+from tqdm import tqdm
+
+# 'flush' will remove cached song while using the end of the song as input to generate the next part
 
 class GenMusicFromPrompt:
-    def __init__(self, model_name="facebook/musicgen-large", use_diffusion_decoder=False, previous_song_duration=2, sample_rate=32000, duration=30):
-        self.model = MusicGen.from_pretrained(model_name)
+    def __init__(self, model_name="facebook/musicgen-large", use_diffusion_decoder=False, previous_song_duration=2, sample_rate=32000, duration=30, device="cpu"):
+        # self.model = MusicGen.from_pretrained(model_name)
+        print('Device', device)
+        self.model = MusicGen.get_pretrained(model_name, device=device)
         self.mbd = MultiBandDiffusion.get_mbd_musicgen() if use_diffusion_decoder else None
         self.song = None
         self.previous_song_duration = previous_song_duration
         self.sample_rate = sample_rate
         self.duration = duration
+        self.device = device
 
     def __call__(self):
         self.display_audio()
@@ -23,14 +30,15 @@ class GenMusicFromPrompt:
             duration=duration
         )
     
-    def generate_from_list(self, prompts, **kwargs):
+    def generate_from_list(self, prompts, verbose=False, **kwargs):
         # If want to start a new song pass in song=None
         # If want to continue from the previous song pass in song=<wav_form_ndarray>
-        
-        for prompt in prompts:
+        for prompt in tqdm(prompts, disable=not verbose):
             self.generate(prompt, **kwargs)
             if 'song' in kwargs:
                 del kwargs['song']
+            if 'flush' in kwargs:
+                del kwargs['flush']
                 # kwargs['song'] = self.song
         return self.song
     
@@ -53,7 +61,7 @@ class GenMusicFromPrompt:
         # Generate the start of a song
         if self.song is None:
             output = self.model.generate(
-                prompt_sample_rate=sample_rate,
+                # prompt_sample_rate=sample_rate,
                 progress=True, return_tokens=True, descriptions=[prompt]
             )
             initial_song = output[0]
@@ -70,14 +78,33 @@ class GenMusicFromPrompt:
                                             prompt_sample_rate=sample_rate,  # Use the generated sample rate
                                             progress=True, return_tokens=True, descriptions=[prompt])
         continued_song = continued_song[0][:, :, trim_amount:]
+        
+        if 'flush' in kwargs and kwargs['flush']:
+            self.song = continued_song
+            return continued_song
+        
         combined_song = torch.cat([self.song, continued_song], dim=-1)
         
         self.song = combined_song
         return combined_song
 
-    def display_audio(self):
-        if self.song is not None:
+    def display_audio(self, song=None):
+        if song is None:
+            song = self.song.to('cpu')
+            
+        if song is not None:
             display_audio(self.song)
         else:
             raise ValueError("No song to display. Please generate a song first.")
         
+    def save_audio(self, filename, song=None):
+        if song is None:
+            song = self.song.to('cpu')#.numpy()
+            
+        if song is not None:
+            if song.ndim == 3:
+                song = song.squeeze(0)
+            
+            torchaudio.save(filename, song, self.sample_rate)
+        else:
+            raise ValueError("No song to save. Please generate a song first.")
