@@ -93,7 +93,7 @@ class GenMusicFromPrompt:
             song = self.song.to('cpu')
             
         if song is not None:
-            display_audio(self.song)
+            display_audio(self.song, self.sample_rate)
         else:
             raise ValueError("No song to display. Please generate a song first.")
         
@@ -106,5 +106,6 @@ class GenMusicFromPrompt:
                 song = song.squeeze(0)
             
             torchaudio.save(filename, song, self.sample_rate)
+            print(f"Saved song to {filename}")
         else:
             raise ValueError("No song to save. Please generate a song first.")
