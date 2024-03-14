@@ -5,6 +5,19 @@ from transformers import pipeline
 import json
 
 
+class Prompt():
+    def __init__(self, text, info, prompt, duration=None, timestamps=None):
+        self.text = text
+        self.info = info
+        self.prompt = prompt
+        self.duration = duration
+        self.timestamps = timestamps
+    
+    def __call__(self):
+        return self.prompt
+    
+    
+
 class MusicGenInfo(BaseModel):
     class ShortTermAttributes(BaseModel):
         tone: str
