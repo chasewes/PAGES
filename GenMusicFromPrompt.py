@@ -19,8 +19,8 @@ class GenMusicFromPrompt:
         self.duration = duration
         self.device = device
 
-    def __call__(self):
-        self.display_audio()
+    # def __call__(self):
+    #     self.display_audio()
 
     def set_generation_params(self, use_sampling=True, top_k=0, **kwargs):
         duration = self.duration if 'duration' not in kwargs else kwargs['duration']
@@ -34,7 +34,12 @@ class GenMusicFromPrompt:
         # If want to start a new song pass in song=None
         # If want to continue from the previous song pass in song=<wav_form_ndarray>
         for prompt in tqdm(prompts, disable=not verbose):
-            self.generate(prompt, **kwargs)
+            curr_kwargs = kwargs.copy()
+            if prompt.duration is not None:
+                # curr_kwargs['song_duration'] = prompt.duration
+                curr_kwargs['duration'] = prompt.duration
+            self.generate(prompt(), **curr_kwargs)
+            
             if 'song' in kwargs:
                 del kwargs['song']
             if 'flush' in kwargs:
@@ -50,8 +55,17 @@ class GenMusicFromPrompt:
         sample_rate = self.sample_rate if 'sample_rate' not in kwargs else kwargs['sample_rate']
         prev_song_duration = self.previous_song_duration if 'prev_song_duration' not in kwargs else kwargs['prev_song_duration']
         
-        if 'duration' not in kwargs and self.song is not None:
-            kwargs['duration'] = self.duration + prev_song_duration
+        # if 'duration' not in kwargs and self.song is not None:
+        #     new_duration = self.duration if 'song_duration' not in kwargs else kwargs['song_duration']
+            
+        #     kwargs['duration'] = new_duration + prev_song_duration
+        # elif self.song is None and 'song_duration' in kwargs:
+        #     kwargs['duration'] = kwargs['song_duration']
+        
+        if 'duration' not in kwargs:
+            kwargs['duration'] = self.duration
+        if self.song is not None:
+            kwargs['duration'] = kwargs['duration'] + prev_song_duration 
         
         self.set_generation_params(**kwargs)
         
