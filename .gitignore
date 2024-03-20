@@ -1,5 +1,7 @@
 data/music_data/*
 __pycache__/*
+*.pyc
+*.cpython*
 
 generated_examples_midterm/*
 generated_examples_midterm_old/*
