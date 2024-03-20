@@ -1,0 +1,94 @@
+body, header, #audioPlayer, #preBuiltDemos {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+}
+
+header {
+    margin-top: 20px; /* Adjust as needed */
+}
+
+#audioPlayer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0; /* Ensure full width */
+    background-color: #f8f8f8;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    z-index: 100; /* Ensure it's above other content */
+}
+
+#preBuiltDemos {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Creates 2 columns */
+    gap: 20px; /* Adjusts the space between grid items */
+    margin-top: 10px; /* Keeps your existing top margin */
+    width: 100%; /* Adjusts the width as necessary */
+    max-width: 600px; /* Keeps your existing max-width */
+    justify-content: center; /* Centers the grid items in the grid container */
+    padding: 0 10px; /* Adds some padding on the sides */
+}
+
+
+.demo-content {
+    display: flex;
+    align-items: center;
+}
+
+.demo img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    margin-right: 10px; /* Adds spacing between the image and the title */
+}
+
+.demo {
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin: 10px 0; /* Add some vertical space between demos */
+    width: 100%; /* Ensure demos take full width of their container */
+    box-sizing: border-box; /* Ensures padding and border are included in the width */
+}
+
+.demo:hover {
+    transform: scale(1.05);
+}
+#backingVolume {
+    width: 100%;
+    max-width: 400px; /* Adjust as needed */
+} 
+
+#nowPlaying {
+    text-align: center;
+    margin-bottom: 20px; /* Adjust spacing */
+}
+
+#nowPlayingImg {
+    width: 50px; /* Adjust size */
+    height: 50px; /* Adjust size */
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+#nowPlayingTitle {
+    margin-top: 0;
+}
+#audioPlayerContainer {
+/*     display: flex; */
+    align-items: center; /* Align vertically */
+    justify-content: center; /* Center content horizontally, if needed */
+    flex-direction: row; /* Arrange children side by side */
+    width: 100%; /* Adjust as needed */
+    padding: 10px; /* Adjust as needed */
+}
+
+#nowPlaying {
+    margin-right: 20px; /* Adds some space between Now Playing and playback controls */
+}
+
+#playbackControls {
+    /* Any specific styles for playback controls */
+}
