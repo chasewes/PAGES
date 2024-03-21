@@ -22,7 +22,12 @@ import time
 import numpy as np
 from datasets import Dataset, Audio
 
+import tempfile
+import librosa
+# from pydub import AudioSegment
+
 import os
+# import io
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -32,6 +37,74 @@ SONG_DUR_SECONDS = 30 #60
 PREV_SONG_DUR = 2 # 4
 
 MAX_GROUP_CNT = 3
+
+# def load_audio(input_data):
+#     """
+#     Load audio file into numpy array and get its sample rate.
+    
+#     Parameters:
+#     - input: Either a file path (str) or a file-like object.
+    
+#     Returns:
+#     - tuple: (audio array, sample rate)
+#     """
+#     y, sr = None, None
+#     if isinstance(input_data, str):
+#         # Input is a file path
+#         y, sr = librosa.load(input_data, sr=None)  # Load with original sample rate
+#     else:
+#     #     # Input is a file-like object
+#     #     with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
+#     #         # Write the content of the file-like object to the temporary file
+#     #         tmp.write(input_data.read())
+#     #         tmp.seek(0)  # Go back to the start of the file
+#     #         y, sr = librosa.load(tmp.name, sr=None)  # Load with original sample rate
+    
+
+#         # Assuming 'file' is a file-like object (Flask's request.files['audioFile'])
+#         # Create a temporary file to first save the uploaded content
+#         with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as tmp_file:
+#             input_data.save(tmp_file.name)  # Save the file content to the temp file
+#             tmp_file.flush()  # Ensure all data is written
+            
+#             # Use torchaudio to load the audio file
+#             waveform, sr = torchaudio.load(tmp_file.name)
+            
+#             # Convert waveform to numpy array if needed
+#             y = waveform.numpy()
+        
+#         # return audio_data, sample_rate
+#     return y, sr
+
+# def load_audio(input_data):
+#     """
+#     Load an audio file from a file path or file-like object, returning the numpy array of samples and the sample rate.
+    
+#     Parameters:
+#     - input_data: A string representing the file path or a file-like object of the audio file.
+    
+#     Returns:
+#     - samples: Numpy array of audio samples.
+#     - sample_rate: Sample rate of the audio file.
+#     """
+#     # Check if input_data is a string (file path) or file-like object and load audio accordingly
+#     if isinstance(input_data, str):
+#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
+#     elif isinstance(input_data, io.IOBase):
+#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
+#     else:
+#         raise TypeError("Input must be a file path (string) or a file-like object.")
+    
+#     # Convert to samples
+#     samples = np.array(audio_segment.get_array_of_samples())
+    
+#     if audio_segment.channels == 2:  # Stereo
+#         samples = samples.reshape((-1, 2))
+    
+#     samples = samples.astype(np.float32, order='C') / 2**15  # Normalize
+#     sample_rate = audio_segment.frame_rate
+    
+#     return samples, sample_rate
 
 
 class Music_Gen_Pipeline():
@@ -282,7 +355,7 @@ class Music_Gen_Pipeline():
         print("Generating Music from prompts")
         self.prompts_to_music(info, **kwargs) # , song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration
         # self.prompts_to_music(prompts, song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration, **kwargs)
-        return self.generator.song
+        return self.generator.song, self.generator.sample_rate
         
         
 
@@ -297,8 +370,8 @@ pipe = Music_Gen_Pipeline(extractor=extractor, generator=generator, device=devic
 def audio_to_music(audio,**kwargs):
     if 'flush' not in kwargs:
         kwargs['flush'] = True
-    song = pipe.audio_to_music(audio, **kwargs)
-    return song
+    song, song_sr = pipe.audio_to_music(audio, **kwargs)
+    return song, song_sr
 
 def text_to_music(text, **kwargs):
     print('NOTE: Auto-generated code. Not Tested')
