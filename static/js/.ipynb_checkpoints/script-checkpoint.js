@@ -102,14 +102,20 @@ document.addEventListener("DOMContentLoaded", function() {
         fetch('/upload', {method: 'POST', body: formData})
             .then(response => response.json())
             .then(result => {
-                console.log(result.message);
-                setTimeout(() => {
-                    addRecordedDemoToDemosList(blob);
-                    recordingStatus.textContent = 'Not recording';
-                }, 5000); // Simulate processing time
+                if (result.error) {
+                    console.error('Error:', result.error);
+                    recordingStatus.textContent = 'Error during processing.';
+                } else {
+                    console.log('Original file:', result.original);
+                    console.log('Processed file:', result.processed);
+                    // Here, you can update the UI or do something with the file names
+                    recordingStatus.textContent = 'Processing complete.';
+                    
+                    addNewUserRecordingDemo(result.original, result.processed);
+                }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Fetch error:', error);
                 recordingStatus.textContent = 'Error during processing.';
             });
     }
@@ -155,6 +161,22 @@ document.addEventListener("DOMContentLoaded", function() {
             demosContainer.appendChild(demoElement);
         });
     }
+    
+    function addNewUserRecordingDemo(original, processed) {
+        // Create URL for the original and processed audio files
+        const originalAudioPath = `uploads/${original}`;
+        const processedAudioPath = `uploads/${processed}`;
+
+        // Add the new demo to the start of the demos array
+        demos.unshift({
+            title: "User Recording",
+            imagePath: "static/images/user_audio.png",
+            audioPath: originalAudioPath,
+            backingPath: processedAudioPath
+        });
+        // Redraw the demos list
+        drawDemos();
+}
 
 
     // Ensure to call drawDemos initially to draw the demos for the first time
