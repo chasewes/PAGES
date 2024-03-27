@@ -38,74 +38,7 @@ PREV_SONG_DUR = 2 # 4
 
 MAX_GROUP_CNT = 3
 
-# def load_audio(input_data):
-#     """
-#     Load audio file into numpy array and get its sample rate.
-    
-#     Parameters:
-#     - input: Either a file path (str) or a file-like object.
-    
-#     Returns:
-#     - tuple: (audio array, sample rate)
-#     """
-#     y, sr = None, None
-#     if isinstance(input_data, str):
-#         # Input is a file path
-#         y, sr = librosa.load(input_data, sr=None)  # Load with original sample rate
-#     else:
-#     #     # Input is a file-like object
-#     #     with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
-#     #         # Write the content of the file-like object to the temporary file
-#     #         tmp.write(input_data.read())
-#     #         tmp.seek(0)  # Go back to the start of the file
-#     #         y, sr = librosa.load(tmp.name, sr=None)  # Load with original sample rate
-    
-
-#         # Assuming 'file' is a file-like object (Flask's request.files['audioFile'])
-#         # Create a temporary file to first save the uploaded content
-#         with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as tmp_file:
-#             input_data.save(tmp_file.name)  # Save the file content to the temp file
-#             tmp_file.flush()  # Ensure all data is written
-            
-#             # Use torchaudio to load the audio file
-#             waveform, sr = torchaudio.load(tmp_file.name)
-            
-#             # Convert waveform to numpy array if needed
-#             y = waveform.numpy()
-        
-#         # return audio_data, sample_rate
-#     return y, sr
-
-# def load_audio(input_data):
-#     """
-#     Load an audio file from a file path or file-like object, returning the numpy array of samples and the sample rate.
-    
-#     Parameters:
-#     - input_data: A string representing the file path or a file-like object of the audio file.
-    
-#     Returns:
-#     - samples: Numpy array of audio samples.
-#     - sample_rate: Sample rate of the audio file.
-#     """
-#     # Check if input_data is a string (file path) or file-like object and load audio accordingly
-#     if isinstance(input_data, str):
-#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
-#     elif isinstance(input_data, io.IOBase):
-#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
-#     else:
-#         raise TypeError("Input must be a file path (string) or a file-like object.")
-    
-#     # Convert to samples
-#     samples = np.array(audio_segment.get_array_of_samples())
-    
-#     if audio_segment.channels == 2:  # Stereo
-#         samples = samples.reshape((-1, 2))
-    
-#     samples = samples.astype(np.float32, order='C') / 2**15  # Normalize
-#     sample_rate = audio_segment.frame_rate
-    
-#     return samples, sample_rate
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class Music_Gen_Pipeline():
     
@@ -299,8 +232,10 @@ class Music_Gen_Pipeline():
             
         
         
+        if 'flush' not in kwargs:
+            kwargs['flush'] = True
         
-        music = self.generator.generate_from_list(prompts, flush=True, **kwargs)
+        music = self.generator.generate_from_list(prompts, **kwargs)
         save_file_loc = kwargs.get('save_file_loc', None)
         if save_file_loc is not None:
             if os.path.isdir(save_file_loc):
@@ -335,9 +270,6 @@ class Music_Gen_Pipeline():
                 wav_audio['sampling_rate'] = kwargs['sample_rate']
             else:
                 raise ValueError('sampling_rate must be provided in some way')
-        
-        
-        
         
         # Extract JSON Info
         print("Splitting Audio to chunks")
@@ -381,8 +313,3 @@ def text_to_music(text, **kwargs):
     prompts, info = pipe.sections_to_prompts(sections, **kwargs)
     pipe.prompts_to_music(info, **kwargs)
     return pipe.generator.song
-    
-
-
-
-

@@ -3,12 +3,14 @@ from werkzeug.utils import secure_filename
 import io
 import os
 from pydub import AudioSegment
-# import Ambient_Pipeline as ap
+import Ambient_Pipeline as ap
 import numpy as np
 import tempfile
 import torch
 import torchaudio
 import subprocess
+# import librosa
+# import scipy.io.wavfile as wavfile
 
 
 app = Flask(__name__)
@@ -23,7 +25,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def convert_mp3_to_wav(input_filepath, output_filepath):
-    command = ['ffmpeg', '-i', input_filepath, '-ar', '44100', output_filepath]
+    command = ['ffmpeg', '-y','-i', input_filepath, '-ar', '44100', output_filepath]
     subprocess.run(command, check=True)
     
 def load_wav_as_np_array(filepath_wav):
@@ -40,9 +42,9 @@ def upload():
     if file.filename == '' or not allowed_file(file.filename):
         return jsonify({'error': 'No selected file or invalid file type'}), 400
     
-    filename = "user_recording.mp3"
+    filename = "balrog_audio.mp3"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
-    file.save(filepath)
+    # file.save(filepath)
     
     filename_wav = "user_recording.wav"
     filepath_wav = os.path.join(UPLOAD_FOLDER, filename_wav)
@@ -57,19 +59,25 @@ def upload():
     # Load the WAV file as a NumPy array
     try:
         sound, sr = load_wav_as_np_array(filepath_wav)
+        sound = sound[0]
+        print(sound.shape)
         print(f"Loaded WAV with sample rate: {sr}")
     except Exception as e:
         return jsonify({'error': f'Failed to load WAV file: {e}'}), 500
 
     # - Feed that into the Ambient Pipeline
    
-    #TODO
+    processed_file_name = 'user_recording_backing_harry_potter.mp3'
+    processed_filepath = os.path.join(UPLOAD_FOLDER, processed_file_name)  # Build the full path for the processed file
+    # processed_audio_file.save(processed_filepath)
+    
+    music, music_sr = ap.audio_to_music(sound, sampling_rate=sr, save_file_loc=processed_filepath)
+    
+    
 
     # - Save that audio as an mp3 to the uploads folder (DONE)
     
-    processed_file_name = 'user_recording_backing.mp3'
-    processed_filepath = os.path.join(UPLOAD_FOLDER, processed_file_name)  # Build the full path for the processed file
-    # processed_audio_file.save(processed_filepath)
+    
     
     # - Serve that file location to the user (DONE) 
 
@@ -92,4 +100,4 @@ def index():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=8000)
+    app.run(debug=True, port=5000)
