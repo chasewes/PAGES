@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function() {
     const demos = [
         { title: "Harry Potter and Fawkes the Phoenix", imagePath: "static/images/harry_potter.jpg", audioPath: "static/audio/HP_Fox_Audio_Clip_4.mp3", backingPath: "static/audio/HP_Fox_Audio_Clip_4_backing.mp3" },
+        { title: "The White Knight", imagePath: "static/images/white_knight.jpg", audioPath: "static/audio/White_Knights_Aleesha_Bake_1.mp3", backingPath: "static/audio/White_Knights_Aleesha_Bake_1_backing.mp3" },
+        { title: "Taco Bell Ad", imagePath: "static/images/Taco_Bell.jpg", audioPath: "static/audio/Taco_Bell.mp3", backingPath: "static/audio/Taco_Bell_backing.mp3" },
         { title: "Gandalf Faces the Balrog", imagePath: "static/images/balrog.png", audioPath: "static/audio/balrog_audio.mp3", backingPath: "static/audio/balrog_audio_backing.mp3" },
         { title: "Gandalf Faces the Balrog (FAKE) (PRANK) ", imagePath: "static/images/balrog.png", audioPath: "static/audio/demo1.mp3", backingPath: "static/audio/backing.mp3" },
         { title: "Demo 2", imagePath: "static/images/wizard.png", audioPath: "static/audio/demo2.mp3", backingPath: "static/audio/backing.mp3" },
@@ -14,6 +16,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const mainAudio = document.getElementById("mainAudio");
     const volumeSlider = document.getElementById("backingVolume");
 
+    // const recentContainer = document.getElementById("recentUploads");
     
     // Set the backing track volume based on the slider's initial value
     backingAudio.volume = volumeSlider.value; // Add this line
@@ -62,6 +65,61 @@ document.addEventListener("DOMContentLoaded", function() {
 
         demosContainer.appendChild(demoElement);
     });
+
+
+    function fetchAndDisplayRecentUploads() {
+        fetch('/api/recent-uploads')
+            .then(response => response.json())
+            .then(demos => {
+                const recentUploadsContainer = document.getElementById("recentUploads");
+                recentUploadsContainer.innerHTML = ''; // Clear existing content
+    
+                demos.forEach(demo => {
+                    const demoElement = document.createElement("div");
+                    demoElement.classList.add("demo");
+                    demoElement.innerHTML = `
+                        <div class="demo-content">
+                            <img src="static/images/user_audio.png" alt="${demo.main}" />
+                            <h3>${demo.main.split('.')[0]}</h3> <!-- Displaying basename as title -->
+                        </div>
+                    `;
+                    demoElement.addEventListener("click", () => {
+                        // Assuming global variables for mainAudio and backingAudio
+                        mainAudio.src = `uploads/${demo.main}`;
+                        backingAudio.src = `uploads/${demo.backing}`;
+                        document.getElementById("nowPlayingImg").src = "static/images/user_audio.png";
+                        document.getElementById("nowPlayingImg").style.display = 'inline';
+                        document.getElementById("nowPlayingTitle").textContent = demo.main.split('.')[0]; // Set title to basename
+                        if (mainAudio.paused) {
+                            mainAudio.play();
+                        } else {
+                            mainAudio.currentTime = 0; // This will also trigger the 'seeked' event
+                        }
+                    });
+    
+                    recentUploadsContainer.appendChild(demoElement);
+                });
+            })
+            .catch(error => console.error('Error fetching recent uploads:', error));
+    }
+
+
+    const toggleBtn = document.getElementById("toggleRecentUploadsBtn");
+    const recentUploadsDiv = document.getElementById("recentUploads");
+
+    toggleBtn.addEventListener("click", function() {
+        if (recentUploadsDiv.style.display === "none") {
+            recentUploadsDiv.style.display = "block"; // Show the section
+            toggleBtn.textContent = "Hide"; // Optionally change the button text to "Hide"
+        } else {
+            recentUploadsDiv.style.display = "none"; // Hide the section
+            toggleBtn.textContent = "Show"; // Optionally change the button text to "Show"
+        }
+    });
+
+    // Ensure to call fetchAndDisplayRecentUploads initially to populate the section
+    fetchAndDisplayRecentUploads();
+
         
     let mediaRecorder;
     let recordedBlobs;

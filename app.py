@@ -95,6 +95,35 @@ def load_wav_as_np_array(filepath_wav):
     np_waveform = waveform.numpy()
     return np_waveform, sample_rate
 
+# @app.route('/api/recent-uploads')
+# def list_recent_uploads():
+#     folder_path = './uploads'
+#     backing_tracks = [f for f in os.listdir(folder_path) if f.endswith('_backing.mp3')]
+#     base_files = [os.path.splitext(f)[0] for f in backing_tracks]  # Remove '_backing.mp3' to get base filename
+#     base_files = [file for file in base_files if os.path.exists(os.path.join(folder_path, file + '.mp3')]
+#     return jsonify(base_files)
+
+@app.route('/api/recent-uploads')
+def list_recent_uploads():
+    uploads_dir = './uploads'
+    files = os.listdir(uploads_dir)
+    demos = []
+
+    for file in files:
+        if file.endswith('_backing.mp3'):
+            base_name = file.rsplit('_backing.mp3', 1)[0]
+            # Search for corresponding main audio file
+            main_audio = None
+            for ext in ['.mp3', '.wav']:
+                if f'{base_name}{ext}' in files:
+                    main_audio = f'{base_name}{ext}'
+                    break
+            if main_audio:
+                demos.append({'main': main_audio, 'backing': file})
+                
+    return jsonify(demos)
+
+
 @app.route('/upload', methods=['POST'])
 def upload():
     if 'audioFile' not in request.files:
