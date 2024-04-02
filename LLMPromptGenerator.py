@@ -65,6 +65,9 @@ class MusicGenInfo(BaseModel):
             ret = " ".join(ret)
             return ret
         
+        def __call__(self):
+            return vars(self)
+        
     class LongTermAttributes(BaseModel):
         """
         Attributes that are collected from the first text chunk passed in and is used as a prefix for all the short term attributes
@@ -97,8 +100,15 @@ class MusicGenInfo(BaseModel):
             ]
             ret = " ".join(ret)
             return ret
+        
+        def __call__(self):
+            return vars(self)
+        
     short_term: ShortTermAttributes
     long_term: LongTermAttributes
+    
+    def __str__(self):
+        return f'long:{self.long_term()}, short:{self.short_term()}'
         
 class LLMPromptGenerator:
     def __init__(self, model_name="TheBloke/Llama-2-7b-Chat-GPTQ", music_gen_info=MusicGenInfo, prompt=None): # device="cpu"
@@ -192,6 +202,7 @@ class LLMPromptGenerator:
             # Combining the long and short term portions
             new_prompt = f"{self.long_term_prompt} {str(i.short_term)}"
             i.prompt = new_prompt
+            print(str(i), 'new_prompt:', new_prompt)
             prompts.append(new_prompt)
         
         

@@ -113,7 +113,9 @@ def upload():
     
     file.save(filepath)
     
-    ext = os.path.splitext(filepath)[1].lower()
+    base_name, ext = os.path.splitext(updated_filename)
+    ext = ext.lower()
+    # ext = os.path.splitext(filepath)[1].lower()
     print(f"File extension: {ext}")
     
     filepath_wav = ""
@@ -131,6 +133,9 @@ def upload():
     else:
         return jsonify({'error': 'Invalid file type'}), 400
 
+
+    # processed_filename = updated_filename.replace('.wav', '_backing.mp3')
+    processed_filename = base_name + '_backing.mp3'
     processed_filepath = filepath_wav.replace('.wav', '_backing.mp3')
     
     # file.save(filepath)
@@ -180,7 +185,7 @@ def upload():
     if os.path.exists(filepath) and os.path.exists(processed_filepath):
         return jsonify({
             'original': updated_filename, #filename,
-            'processed': 'user_recording_backing.mp3'
+            'processed': processed_filename #'user_recording_backing.mp3'
         })
     else:
         return jsonify({'error': 'Error processing file'}), 500

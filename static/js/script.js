@@ -220,7 +220,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const originalFilePath = `/uploads/${originalFileName}`;
         const processedFilePath = `/uploads/${processedFileName}`;
         // Assuming a naming convention or a static image for uploaded demos
-        const demoImage = "static/images/uploaded_audio.png"; // Placeholder image path
+        const demoImage = "static/images/user_audio.png"; // Placeholder image path
     
         const newDemo = {
             title: "Uploaded Audio",

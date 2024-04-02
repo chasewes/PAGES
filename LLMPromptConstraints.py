@@ -51,6 +51,10 @@ class MusicGenInfoModded(BaseModel):
         feeling: constr(pattern=feelings)
         is_setting_described: bool
         setting_description: str
+        one_sentence_soundscape: str
+        
+        def __call__(self):
+            return vars(self)
         
         def __str__(self):
             # **MUSIC_PROMPT**
@@ -63,7 +67,9 @@ class MusicGenInfoModded(BaseModel):
             # ret = " ".join(ret)
             ret = str(vars(self))
             
-            ret = [f'Invoking a feeling of {self.feeling}']
+            ret = [
+                f'{self.one_sentence_soundscape}',
+                f'Invoking a feeling of {self.feeling}']
             ret = " ".join(ret)
             
             
@@ -91,8 +97,10 @@ class MusicGenInfoModded(BaseModel):
         # categories: constr(regex='^(Dark|Dazzling|Other)$')
         # categories: constr(pattern=r'(Dark|Dazzling|Other)')
         descriptor: constr(pattern=category_list)
+        one_sentence_soundscape: str
         
-        
+        def __call__(self):
+            return vars(self)
         # is_mystical: bool
     
         def __str__(self):
@@ -111,10 +119,14 @@ class MusicGenInfoModded(BaseModel):
             # ret = " ".join(ret)
             
             ret = str(vars(self))
-            ret = [f'{self.descriptor}',
-                   f'{self.book_genre}',
-                   f'{self.music_type}'
-                #    f'{self.instruments}']
+            ret = [
+                ''
+                # f'{self.one_sentence_soundscape}'
+                f'{self.descriptor}',
+                f'{self.book_genre}',
+                f'{self.music_type}'
+                
+                # f'{self.instruments}']
             ]
             ret = " ".join(ret)
             
@@ -122,6 +134,13 @@ class MusicGenInfoModded(BaseModel):
             return ret
     short_term: ShortTermAttributes
     long_term: LongTermAttributes
+    
+    def __init_subclass__(cls) -> None:
+        return super().__init_subclass__()
+    
+    def __str__(self):
+        text = f'long:{self.long_term()}, short:{self.short_term()}'
+        return text
     
 prompt = """
     {}\n\n In this format {}, describe this book as it relates to these categories. Be creative and use interesting words.
