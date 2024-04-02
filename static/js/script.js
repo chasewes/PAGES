@@ -1,14 +1,22 @@
 document.addEventListener("DOMContentLoaded", function() {
     const demos = [
-        { title: "Gandalf Faces the Balrog", imagePath: "static/images/balrog.png", audioPath: "static/audio/demo1.mp3", backingPath: "static/audio/backing.mp3" },
+        { title: "Harry Potter and Fawkes the Phoenix", imagePath: "static/images/harry_potter.jpg", audioPath: "static/audio/HP_Fox_Audio_Clip_4.mp3", backingPath: "static/audio/HP_Fox_Audio_Clip_4_backing.mp3" },
+        { title: "Gandalf Faces the Balrog", imagePath: "static/images/balrog.png", audioPath: "static/audio/balrog_audio.mp3", backingPath: "static/audio/balrog_audio_backing.mp3" },
+        { title: "Gandalf Faces the Balrog (FAKE) (PRANK) ", imagePath: "static/images/balrog.png", audioPath: "static/audio/demo1.mp3", backingPath: "static/audio/backing.mp3" },
         { title: "Demo 2", imagePath: "static/images/wizard.png", audioPath: "static/audio/demo2.mp3", backingPath: "static/audio/backing.mp3" },
+
         // Add more demos as needed
     ];
+    // It was confirmed that .wav files do work for audio paths.
 
     const demosContainer = document.getElementById("preBuiltDemos");
     const backingAudio = document.getElementById("backingAudio");
     const mainAudio = document.getElementById("mainAudio");
     const volumeSlider = document.getElementById("backingVolume");
+
+    
+    // Set the backing track volume based on the slider's initial value
+    backingAudio.volume = volumeSlider.value; // Add this line
 
     volumeSlider.addEventListener("input", function() {
         backingAudio.volume = this.value;
@@ -54,8 +62,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         demosContainer.appendChild(demoElement);
     });
-    
-    
+        
     let mediaRecorder;
     let recordedBlobs;
 
@@ -176,9 +183,82 @@ document.addEventListener("DOMContentLoaded", function() {
         });
         // Redraw the demos list
         drawDemos();
-}
+    }
 
 
     // Ensure to call drawDemos initially to draw the demos for the first time
     drawDemos();
+
+    const uploadForm = document.getElementById('uploadForm');
+    // uploadForm.onsubmit = async function(event) {
+    //     event.preventDefault(); // Prevent the default form submission
+    //     const formData = new FormData(uploadForm);
+        
+    //     try {
+    //         const response = await fetch('/upload', {
+    //             method: 'POST',
+    //             body: formData, // FormData object to be sent in the request body
+    //         });
+    //         const result = await response.json();
+            
+    //         // Handle the response data from the server
+    //         if (response.ok) {
+    //             console.log('Upload successful:', result);
+    //             // Here, update the UI to reflect the successful upload
+    //             // e.g., displaying the processed file or a success message
+    //         } else {
+    //             console.error('Upload failed:', result.error);
+    //             // Update the UI to show the error message
+    //         }
+    //     } catch (error) {
+    //         console.error('Error during fetch:', error);
+    //         // Handle network errors or other issues with the fetch call
+    //     }
+    // };
+
+    function addNewDemoFromUpload(originalFileName, processedFileName) {
+        const originalFilePath = `/uploads/${originalFileName}`;
+        const processedFilePath = `/uploads/${processedFileName}`;
+        // Assuming a naming convention or a static image for uploaded demos
+        const demoImage = "static/images/uploaded_audio.png"; // Placeholder image path
+    
+        const newDemo = {
+            title: "Uploaded Audio",
+            imagePath: demoImage,
+            audioPath: originalFilePath,
+            backingPath: processedFilePath
+        };
+    
+        // Add the new demo to the beginning of the demos array
+        demos.unshift(newDemo);
+    
+        // Call a function to redraw the demos on the page
+        drawDemos();
+    }
+
+    // Modify your upload function to call `addNewDemoFromUpload` upon successful upload
+    uploadForm.onsubmit = async function(event) {
+        event.preventDefault();
+        const formData = new FormData(uploadForm);
+        
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+            
+            if (response.ok) {
+                // Assuming 'original' and 'processed' are the keys in the JSON response
+                addNewDemoFromUpload(result.original, result.processed);
+                console.log('Upload successful:', result);
+            } else {
+                console.error('Upload failed:', result.error);
+            }
+        } catch (error) {
+            console.error('Error during fetch:', error);
+        }
+    };
+
+
 });

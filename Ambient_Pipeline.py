@@ -1,5 +1,8 @@
 from LLMPromptGenerator import LLMPromptGenerator, DetailedInfo
 from GenMusicFromPrompt import GenMusicFromPrompt
+from LLMPromptConstraints import music_gen_info, prompt
+
+constrained_prompt = prompt
 
 from audiocraft.models import MusicGen
 from audiocraft.models import MultiBandDiffusion
@@ -31,6 +34,15 @@ import os
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
+
+
+# Parameters for Audio Chunking and Music Duration Generation:
+DFLT_CHUNK_LEN_S = 15 # For Whisper
+DESIRED_CHUNK_LEN = 15 # For grouping whisper chunks (desired length of a chunk)
+MAX_CHUNK_LEN = 20 # For grouping whisper chunks (max length of a chunk)
+
+
+
 
 GROUP_WORD_COUNT = 60 #120 
 SONG_DUR_SECONDS = 30 #60 
@@ -271,9 +283,14 @@ class Music_Gen_Pipeline():
             else:
                 raise ValueError('sampling_rate must be provided in some way')
         
+        
+        
         # Extract JSON Info
         print("Splitting Audio to chunks")
-        chunks, text = self.audio_to_sections(wav_audio)
+        chunks, text = self.audio_to_sections(wav_audio, 
+                                              default_chunk_length_s=DFLT_CHUNK_LEN_S,
+                                              max_length=MAX_CHUNK_LEN,
+                                              desired_lengths=DESIRED_CHUNK_LEN)
         print("Extracting Info from chunks")
         prompts, info = self.sections_to_prompts(chunks)
         
@@ -291,7 +308,7 @@ class Music_Gen_Pipeline():
         
         
 
-extractor = LLMPromptGenerator() # device=device
+extractor = LLMPromptGenerator(music_gen_info=music_gen_info, prompt=constrained_prompt) # device=device
 
 generator = GenMusicFromPrompt(device=device)
 

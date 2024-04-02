@@ -24,7 +24,7 @@
                 <audio id="backingAudio" src="static/audio/backing.mp3"></audio>
                 <div>
                     <label for="backingVolume">Backing Volume:</label>
-                    <input type="range" id="backingVolume" name="volume" min="0" max="1" step="0.01" value="0.5">
+                    <input type="range" id="backingVolume" name="volume" min="0" max="1" step="0.01" value="0.1"> <!-- value="0.5" -->
                 </div>
             </div>
         </div>
@@ -39,6 +39,14 @@
         <button id="stopRecordBtn" disabled>Stop Recording</button>
         <div id="recordingStatus">Not recording</div>
         <audio id="recordedAudio" controls hidden></audio>
+    </section>
+    <!-- File Upload Section -->
+    <section id="fileUploadSection">
+        <h2>Upload Your Recording</h2>
+        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+            <input type="file" name="audioFile" id="audioFile">
+            <button type="submit">Upload File</button>
+        </form>
     </section>
     <section id="howItWorks">
 <!--              <h2>How It Works</h2> -->

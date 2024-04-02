@@ -101,22 +101,42 @@ class MusicGenInfo(BaseModel):
     long_term: LongTermAttributes
         
 class LLMPromptGenerator:
-    def __init__(self, model_name="TheBloke/Llama-2-7b-Chat-GPTQ"): # device="cpu"
+    def __init__(self, model_name="TheBloke/Llama-2-7b-Chat-GPTQ", music_gen_info=MusicGenInfo, prompt=None): # device="cpu"
         self.model_name = model_name
         self.hf_pipeline = pipeline('text-generation', model=model_name, device_map='auto') # device=device)
         self.info = []
         self.long_term_prompt = None
+        self.music_gen_info = music_gen_info #MusicGenInfo
+        self.prompt = prompt
         
-    def generate_llm_prompt(self, text, music_gen_info=MusicGenInfo):
-        if isinstance(text, list):
-            return [self.generate_llm_prompt(t, music_gen_info) for t in text]
-        
-        prompt = f"""
-        {text}\n\n In the following format {music_gen_info.schema_json()}, A piece music generated as background ambience for the above text would have these qualities: \n
+    def generate_llm_prompt(self, text, music_gen_info=None, prompt=None):
+        if music_gen_info is None:
+            music_gen_info = self.music_gen_info
+        if prompt is not None:
+            self.prompt = prompt
+        elif self.prompt is None:
+            self.prompt = """
+        {}\n\n In the following format {}, A piece music generated as background ambience for the above text would have these qualities: \n
         """
+        
+        # NOTE: Prompt expects two input locations for formatting purposes.
+        if isinstance(text, list):
+            return [self.generate_llm_prompt(t, prompt=prompt) for t in text]
+        
+        # if prompt is None:
+            
+        prompt = self.prompt.format(text, self.music_gen_info.schema_json())
+        
+        
+        # prompt = f"""
+        # {text}\n\n In the following format {music_gen_info.schema_json()}, A piece music generated as background ambience for the above text would have these qualities: \n
+        # """
         return prompt
     
-    def extract_info(self, text, music_gen_info=MusicGenInfo, flush=False):
+    def extract_info(self, text, music_gen_info=None, prompt=None, flush=False):
+        if music_gen_info is not None:
+            self.music_gen_info = music_gen_info
+            
         ret_first = False
         
         if not isinstance(text, list):
@@ -135,8 +155,8 @@ class LLMPromptGenerator:
             # timestamps = [t['timestamp'] for t in text]
         
         
-        llm_prompts = self.generate_llm_prompt(text_raw, music_gen_info)
-        parser = JsonSchemaParser(music_gen_info.schema())
+        llm_prompts = self.generate_llm_prompt(text_raw, prompt=prompt) # music_gen_info
+        parser = JsonSchemaParser(self.music_gen_info.schema())
         prefix_function = build_transformers_prefix_allowed_tokens_fn(self.hf_pipeline.tokenizer, parser)
         output_dict = self.hf_pipeline(llm_prompts, prefix_allowed_tokens_fn=prefix_function)
         
@@ -149,7 +169,7 @@ class LLMPromptGenerator:
         for i, p in enumerate(llm_prompts):
             results.append(json.loads(output_dict[i][0]['generated_text'][len(p):]))
             
-        info_formatted = parse_obj_as(list[MusicGenInfo], [r for r in results])
+        info_formatted = parse_obj_as(list[self.music_gen_info], [r for r in results])
         info_detailed = [DetailedInfo(t, i) for t, i in zip(text, info_formatted)]
         
         self.info.extend(info_detailed)
