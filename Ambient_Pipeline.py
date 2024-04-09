@@ -1,8 +1,6 @@
-from LLMPromptGenerator import LLMPromptGenerator, DetailedInfo
+from LLMPromptGenerator import LLMPromptGenerator#, DetailedInfo
 from GenMusicFromPrompt import GenMusicFromPrompt
-from LLMPromptConstraints import music_gen_info, prompt
-
-constrained_prompt = prompt
+from LLMPromptConstraints import MusicGenInfo
 
 from audiocraft.models import MusicGen
 from audiocraft.models import MultiBandDiffusion
@@ -30,6 +28,7 @@ import librosa
 # from pydub import AudioSegment
 
 import os
+import re
 # import io
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -212,42 +211,19 @@ class Music_Gen_Pipeline():
     def sections_to_prompts(self, word_sections, flush_extractor=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         
+        print(word_sections)
+        
         # Extract JSON Info
-        extracted_json = self.extractor.extract_info(word_sections, flush=flush_extractor)
-        # Generate Prompts
-        prompts, info = self.extractor.prompts()
+        prompts, durations= self.extractor.generate_from_chunks(word_sections)
         
+        print(prompts)
+        
+        return prompts, durations
     
-        if verbose:
-            print(self.extractor.info)
-            
-            print('Prompts:')
-            for p in prompts:
-                print(p)
-        return prompts, info
-    
-    def prompts_to_music(self, prompts, **kwargs):
-        if isinstance(prompts, str):
-            prompts = [DetailedInfo(None, None, prompts)]
-        elif isinstance(prompts, dict):
-            prompts = [DetailedInfo(prompts, None, prompts['text'])]
-        elif isinstance(prompts, DetailedInfo):
-            prompts = [prompts]
-            
-        if prompts is None or len(prompts) == 0:
-            return
+    def prompts_to_music(self, prompts, durations, **kwargs):
         
-        if isinstance(prompts[0], dict):
-            prompts = [DetailedInfo(p, None, p['text']) for p in prompts]
-        elif isinstance(prompts[0], str):
-            prompts = [DetailedInfo(None, None, p) for p in prompts]
-            
+        music = self.generator.generate_from_list(prompts, durations, **kwargs)
         
-        
-        if 'flush' not in kwargs:
-            kwargs['flush'] = True
-        
-        music = self.generator.generate_from_list(prompts, **kwargs)
         save_file_loc = kwargs.get('save_file_loc', None)
         if save_file_loc is not None:
             if os.path.isdir(save_file_loc):
@@ -272,7 +248,7 @@ class Music_Gen_Pipeline():
                 raise ValueError('sampling_rate must be provided for numpy array audio')
             wav_audio = {'path': path, 'array': wav_audio, 'sampling_rate': kwargs['sampling_rate']}
             # 'path', 'array', 'sampling_rate'
-            
+              
             # wav_audio = convert_audio(wav_audio, 'wav')
         
         if 'sampling_rate' not in wav_audio:
@@ -291,8 +267,10 @@ class Music_Gen_Pipeline():
                                               default_chunk_length_s=DFLT_CHUNK_LEN_S,
                                               max_length=MAX_CHUNK_LEN,
                                               desired_lengths=DESIRED_CHUNK_LEN)
+        
         print("Extracting Info from chunks")
-        prompts, info = self.sections_to_prompts(chunks)
+        prompts, durations = self.sections_to_prompts(chunks)
+        print(prompts)
         
         save_info_loc = kwargs.get('save_info_loc', None)
         if save_info_loc is not None:
@@ -302,13 +280,15 @@ class Music_Gen_Pipeline():
                 json.dump(info_preped, f)
         
         print("Generating Music from prompts")
-        self.prompts_to_music(info, **kwargs) # , song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration
-        # self.prompts_to_music(prompts, song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration, **kwargs)
+        
+        
+        self.prompts_to_music(prompts, durations, **kwargs)
+        
         return self.generator.song, self.generator.sample_rate
         
-        
 
-extractor = LLMPromptGenerator(music_gen_info=music_gen_info, prompt=constrained_prompt) # device=device
+
+extractor = LLMPromptGenerator()
 
 generator = GenMusicFromPrompt(device=device)
 

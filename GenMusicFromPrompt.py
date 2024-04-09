@@ -30,15 +30,17 @@ class GenMusicFromPrompt:
             duration=duration
         )
     
-    def generate_from_list(self, prompts, verbose=False, **kwargs):
+    def generate_from_list(self, prompts, durations, verbose=False, **kwargs):
         # If want to start a new song pass in song=None
         # If want to continue from the previous song pass in song=<wav_form_ndarray>
-        for prompt in tqdm(prompts, disable=not verbose):
+        for index in tqdm(range(len(prompts))):
+            prompt = prompts[index]
+            curr_duration = durations[index]
+            
             curr_kwargs = kwargs.copy()
-            if prompt.duration is not None:
-                # curr_kwargs['song_duration'] = prompt.duration
-                curr_kwargs['duration'] = prompt.duration
-            self.generate(prompt(), **curr_kwargs)
+
+            curr_kwargs['duration'] = curr_duration
+            self.generate(prompt, **curr_kwargs)
             
             if 'song' in kwargs:
                 del kwargs['song']

@@ -1,5 +1,6 @@
-from LLMPromptGenerator import LLMPromptGenerator, DetailedInfo
+from LLMPromptGenerator import LLMPromptGenerator#, DetailedInfo
 from GenMusicFromPrompt import GenMusicFromPrompt
+from LLMPromptConstraints import MusicGenInfo
 
 from audiocraft.models import MusicGen
 from audiocraft.models import MultiBandDiffusion
@@ -27,10 +28,20 @@ import librosa
 # from pydub import AudioSegment
 
 import os
+import re
 # import io
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
+
+
+# Parameters for Audio Chunking and Music Duration Generation:
+DFLT_CHUNK_LEN_S = 15 # For Whisper
+DESIRED_CHUNK_LEN = 15 # For grouping whisper chunks (desired length of a chunk)
+MAX_CHUNK_LEN = 20 # For grouping whisper chunks (max length of a chunk)
+
+
+
 
 GROUP_WORD_COUNT = 60 #120 
 SONG_DUR_SECONDS = 30 #60 
@@ -38,74 +49,7 @@ PREV_SONG_DUR = 2 # 4
 
 MAX_GROUP_CNT = 3
 
-# def load_audio(input_data):
-#     """
-#     Load audio file into numpy array and get its sample rate.
-    
-#     Parameters:
-#     - input: Either a file path (str) or a file-like object.
-    
-#     Returns:
-#     - tuple: (audio array, sample rate)
-#     """
-#     y, sr = None, None
-#     if isinstance(input_data, str):
-#         # Input is a file path
-#         y, sr = librosa.load(input_data, sr=None)  # Load with original sample rate
-#     else:
-#     #     # Input is a file-like object
-#     #     with tempfile.NamedTemporaryFile(delete=True, suffix='.wav') as tmp:
-#     #         # Write the content of the file-like object to the temporary file
-#     #         tmp.write(input_data.read())
-#     #         tmp.seek(0)  # Go back to the start of the file
-#     #         y, sr = librosa.load(tmp.name, sr=None)  # Load with original sample rate
-    
-
-#         # Assuming 'file' is a file-like object (Flask's request.files['audioFile'])
-#         # Create a temporary file to first save the uploaded content
-#         with tempfile.NamedTemporaryFile(delete=True, suffix='.mp3') as tmp_file:
-#             input_data.save(tmp_file.name)  # Save the file content to the temp file
-#             tmp_file.flush()  # Ensure all data is written
-            
-#             # Use torchaudio to load the audio file
-#             waveform, sr = torchaudio.load(tmp_file.name)
-            
-#             # Convert waveform to numpy array if needed
-#             y = waveform.numpy()
-        
-#         # return audio_data, sample_rate
-#     return y, sr
-
-# def load_audio(input_data):
-#     """
-#     Load an audio file from a file path or file-like object, returning the numpy array of samples and the sample rate.
-    
-#     Parameters:
-#     - input_data: A string representing the file path or a file-like object of the audio file.
-    
-#     Returns:
-#     - samples: Numpy array of audio samples.
-#     - sample_rate: Sample rate of the audio file.
-#     """
-#     # Check if input_data is a string (file path) or file-like object and load audio accordingly
-#     if isinstance(input_data, str):
-#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
-#     elif isinstance(input_data, io.IOBase):
-#         audio_segment = AudioSegment.from_file(input_data, format="mp3")
-#     else:
-#         raise TypeError("Input must be a file path (string) or a file-like object.")
-    
-#     # Convert to samples
-#     samples = np.array(audio_segment.get_array_of_samples())
-    
-#     if audio_segment.channels == 2:  # Stereo
-#         samples = samples.reshape((-1, 2))
-    
-#     samples = samples.astype(np.float32, order='C') / 2**15  # Normalize
-#     sample_rate = audio_segment.frame_rate
-    
-#     return samples, sample_rate
-
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class Music_Gen_Pipeline():
     
@@ -267,40 +211,19 @@ class Music_Gen_Pipeline():
     def sections_to_prompts(self, word_sections, flush_extractor=False, verbose=None):
         verbose = verbose if verbose is not None else self.verbose
         
+        print(word_sections)
+        
         # Extract JSON Info
-        extracted_json = self.extractor.extract_info(word_sections, flush=flush_extractor)
-        # Generate Prompts
-        prompts, info = self.extractor.prompts()
+        prompts, durations= self.extractor.generate_from_chunks(word_sections)
         
+        print(prompts)
+        
+        return prompts, durations
     
-        if verbose:
-            print(self.extractor.info)
-            
-            print('Prompts:')
-            for p in prompts:
-                print(p)
-        return prompts, info
-    
-    def prompts_to_music(self, prompts, **kwargs):
-        if isinstance(prompts, str):
-            prompts = [DetailedInfo(None, None, prompts)]
-        elif isinstance(prompts, dict):
-            prompts = [DetailedInfo(prompts, None, prompts['text'])]
-        elif isinstance(prompts, DetailedInfo):
-            prompts = [prompts]
-            
-        if prompts is None or len(prompts) == 0:
-            return
+    def prompts_to_music(self, prompts, durations, **kwargs):
         
-        if isinstance(prompts[0], dict):
-            prompts = [DetailedInfo(p, None, p['text']) for p in prompts]
-        elif isinstance(prompts[0], str):
-            prompts = [DetailedInfo(None, None, p) for p in prompts]
-            
+        music = self.generator.generate_from_list(prompts, durations, **kwargs)
         
-        
-        
-        music = self.generator.generate_from_list(prompts, flush=True, **kwargs)
         save_file_loc = kwargs.get('save_file_loc', None)
         if save_file_loc is not None:
             if os.path.isdir(save_file_loc):
@@ -325,7 +248,7 @@ class Music_Gen_Pipeline():
                 raise ValueError('sampling_rate must be provided for numpy array audio')
             wav_audio = {'path': path, 'array': wav_audio, 'sampling_rate': kwargs['sampling_rate']}
             # 'path', 'array', 'sampling_rate'
-            
+              
             # wav_audio = convert_audio(wav_audio, 'wav')
         
         if 'sampling_rate' not in wav_audio:
@@ -338,12 +261,16 @@ class Music_Gen_Pipeline():
         
         
         
-        
         # Extract JSON Info
         print("Splitting Audio to chunks")
-        chunks, text = self.audio_to_sections(wav_audio)
+        chunks, text = self.audio_to_sections(wav_audio, 
+                                              default_chunk_length_s=DFLT_CHUNK_LEN_S,
+                                              max_length=MAX_CHUNK_LEN,
+                                              desired_lengths=DESIRED_CHUNK_LEN)
+        
         print("Extracting Info from chunks")
-        prompts, info = self.sections_to_prompts(chunks)
+        prompts, durations = self.sections_to_prompts(chunks)
+        print(prompts)
         
         save_info_loc = kwargs.get('save_info_loc', None)
         if save_info_loc is not None:
@@ -353,13 +280,15 @@ class Music_Gen_Pipeline():
                 json.dump(info_preped, f)
         
         print("Generating Music from prompts")
-        self.prompts_to_music(info, **kwargs) # , song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration
-        # self.prompts_to_music(prompts, song_dur_seconds=song_dur_seconds, previous_song_duration=previous_song_duration, **kwargs)
+        
+        
+        self.prompts_to_music(prompts, durations, **kwargs)
+        
         return self.generator.song, self.generator.sample_rate
         
-        
 
-extractor = LLMPromptGenerator() # device=device
+
+extractor = LLMPromptGenerator()
 
 generator = GenMusicFromPrompt(device=device)
 
@@ -381,8 +310,3 @@ def text_to_music(text, **kwargs):
     prompts, info = pipe.sections_to_prompts(sections, **kwargs)
     pipe.prompts_to_music(info, **kwargs)
     return pipe.generator.song
-    
-
-
-
-
