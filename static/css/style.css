@@ -21,16 +21,46 @@ header {
     z-index: 100; /* Ensure it's above other content */
 }
 
-#preBuiltDemos {
+/* Default styles for mobile devices (1 column) */
+#preBuiltDemos, #recentUploads {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Creates 2 columns */
-    gap: 20px; /* Adjusts the space between grid items */
-    margin-top: 10px; /* Keeps your existing top margin */
-    width: 100%; /* Adjusts the width as necessary */
-    max-width: 600px; /* Keeps your existing max-width */
-    justify-content: center; /* Centers the grid items in the grid container */
-    padding: 0 10px; /* Adds some padding on the sides */
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+    padding: 0 10px;
 }
+
+/* Medium devices (tablets, 600px and up) */
+@media (min-width: 600px) {
+    #recentUploads {
+        /* Adjusts to 2 columns for medium screens */
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 600px; /* Adjust if needed */
+    }
+    #preBuiltDemos {
+        /* Adjusts to 2 columns for medium screens, you can keep it at 3 if it looks better */
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 900px; /* Adjust if needed */
+    }
+}
+
+/* Large devices (desktops, 900px and up) */
+@media (min-width: 900px) {
+    #preBuiltDemos {
+        /* Adjusts to 3 columns for large screens */
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 900px; /* This might not be needed anymore unless you want to limit the max-width */
+    }
+    #recentUploads {
+        /* Adjusts to 2 columns for medium screens */
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 900px; /* Adjust if needed */
+    }
+    /* If you want #recentUploads to also have 3 columns on larger screens, add similar rule here */
+}
+
 
 
 .demo-content {

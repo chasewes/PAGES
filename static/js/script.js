@@ -2,7 +2,11 @@ document.addEventListener("DOMContentLoaded", function() {
     const demos = [
         { title: "Harry Potter and Fawkes the Phoenix", imagePath: "static/images/harry_potter.jpg", audioPath: "static/audio/HP_Fox_Audio_Clip_4.mp3", backingPath: "static/audio/HP_Fox_Audio_Clip_4_backing.mp3" },
         { title: "The White Knight", imagePath: "static/images/white_knight.jpg", audioPath: "static/audio/White_Knights_Aleesha_Bake_1.mp3", backingPath: "static/audio/White_Knights_Aleesha_Bake_1_backing.mp3" },
-        { title: "Taco Bell Ad", imagePath: "static/images/Taco_Bell.jpg", audioPath: "static/audio/Taco_Bell.mp3", backingPath: "static/audio/Taco_Bell_backing.mp3" },
+        // { title: "Taco Bell Ad", imagePath: "static/images/Taco_Bell.jpg", audioPath: "static/audio/Taco_Bell.mp3", backingPath: "static/audio/Taco_Bell_backing.mp3" },
+        { title: "Taco Bell", imagePath: "static/images/Taco_Bell.jpg", audioPath: "static/audio/Taco_Bell_Vocals.mp3", backingPath: "static/audio/Taco_Bell_Vocals_backing.mp3" },
+        { title: "Paul Bear", imagePath: "static/images/paul_bear.png", audioPath: "static/audio/Paul_Bear.mp3", backingPath: "static/audio/Paul_Bear_backing.mp3" },
+        { title: "Dwarf", imagePath: "static/images/dwarf.png", audioPath: "static/audio/Steven-Varnum-WINNER-MALE.mp3", backingPath: "static/audio/Steven-Varnum-WINNER-MALE_backing.mp3" },
+
         { title: "Gandalf Faces the Balrog", imagePath: "static/images/balrog.png", audioPath: "static/audio/balrog_audio.mp3", backingPath: "static/audio/balrog_audio_backing.mp3" },
         { title: "Gandalf Faces the Balrog (FAKE) (PRANK) ", imagePath: "static/images/balrog.png", audioPath: "static/audio/demo1.mp3", backingPath: "static/audio/backing.mp3" },
         { title: "Demo 2", imagePath: "static/images/wizard.png", audioPath: "static/audio/demo2.mp3", backingPath: "static/audio/backing.mp3" },
