@@ -77,6 +77,8 @@ class LLMPromptGenerator:
         
         #extract the json object from the generated_text and convert it to a dict.
         music_attributes = self.extract_json_from_llm_output(generated_text)
+
+        print(music_attributes)
         
         #set/reset the long term attributes
         if flush or self.major_key is None: 

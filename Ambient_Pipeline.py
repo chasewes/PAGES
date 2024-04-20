@@ -31,9 +31,6 @@ import os
 import re
 # import io
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
-
 
 # Parameters for Audio Chunking and Music Duration Generation:
 DFLT_CHUNK_LEN_S = 15 # For Whisper
@@ -288,13 +285,6 @@ class Music_Gen_Pipeline():
         
 
 
-extractor = LLMPromptGenerator()
-
-generator = GenMusicFromPrompt(device=device)
-
-pipe = Music_Gen_Pipeline(extractor=extractor, generator=generator, device=device, verbose=True)
-
-
 
 def audio_to_music(audio,**kwargs):
     if 'flush' not in kwargs:
@@ -303,10 +293,8 @@ def audio_to_music(audio,**kwargs):
     return song, song_sr
 
 def text_to_music(text, **kwargs):
-    print('NOTE: Auto-generated code. Not Tested')
-    if 'flush' not in kwargs:
-        kwargs['flush'] = True
+    raise NotImplementedError('Code does not work yet')
     sections = pipe.text_to_sections(text, **kwargs)
-    prompts, info = pipe.sections_to_prompts(sections, **kwargs)
-    pipe.prompts_to_music(info, **kwargs)
+    prompts, durations = pipe.sections_to_prompts(sections, **kwargs)
+    pipe.prompts_to_music(prompts, **kwargs)
     return pipe.generator.song
