@@ -1,5 +1,0 @@
-audiocraft==1.2.0
-datasets==2.16.1
-pydantic==2.6.1
-transformers==4.37.2
-lm-format-enforcer==0.8.3
