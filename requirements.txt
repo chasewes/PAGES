@@ -1,5 +1,19 @@
+# Dependencies
 audiocraft==1.2.0
 datasets==2.16.1
-pydantic==2.6.1
+Flask==3.0.3
+librosa==0.10.1
+numpy==1.26.4
+pydantic==2.7.1
+pydub==0.25.1
+torch==2.1.0
+torchaudio==2.1.0
+tqdm==4.66.1
 transformers==4.37.2
-lm-format-enforcer==0.8.3
+Werkzeug==3.0.2
+
+# This project also requires the `lm-format-enforcer` package, which can be installed with
+#
+# ```pip install lm-format-enforcer```
+#
+# For more information, see https://github.com/noamgat/lm-format-enforcer
