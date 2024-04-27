@@ -11,6 +11,7 @@ class LLMPromptGenerator:
         self.model_name = model_name
         self.hf_pipeline = pipeline('text-generation', model=model_name, device_map='auto') # device=device)
         self.info = []
+        self.prompts = []
         self.long_term_prompt = None
 
         self.major_key = None
@@ -78,6 +79,7 @@ class LLMPromptGenerator:
         #extract the json object from the generated_text and convert it to a dict.
         music_attributes = self.extract_json_from_llm_output(generated_text)
         
+        
         #set/reset the long term attributes
         if flush or self.major_key is None: 
             self.major_key = music_attributes['is_major_key']
@@ -90,19 +92,31 @@ class LLMPromptGenerator:
           f"{'in a major key' if self.major_key else 'in a minor key'}, "
           "evoking an immersive atmosphere.")
         
+        self.info.append(music_attributes)
+        self.prompts.append(prompt)
+        
         return prompt
         
-    def generate_from_chunks(self, chunks, music_gen_info=MusicGenInfo, prompt=None):
+    def generate_from_chunks(self, chunks, music_gen_info=MusicGenInfo, prompt=None, **kwargs):
         prompts = []
         durations = []
         
         flush = False
+        if 'flush' in kwargs:
+            flush = kwargs['flush']
+        if 'flush_extractor' in kwargs:
+            flush = kwargs['flush_extractor']
+            
+        if flush:
+            self.prompts = []
+            self.info = []
         for chunk in chunks: 
             #some logic to determine when to flush could go here. 
             
             #generate the prompt and add it to the list
             prompts.append(self.generate_musicgen_prompt(chunk['text'], flush=flush))
             durations.append(float(chunk['duration']))
-            
+        
+        # self.prompts.extend(prompts)
             
         return prompts, durations

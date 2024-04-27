@@ -30,6 +30,23 @@ header {
     width: 100%;
     justify-content: center;
     padding: 0 10px;
+    perspective: 1000px; /* Adjust as needed for the depth effect */
+
+}
+
+.demo {
+    cursor: pointer;
+    transition: transform 0.2s; /* Smooth transition for scaling */
+}
+
+.demo:hover {
+    transform: scale(1.05); /* Scale up on hover */
+}
+
+.demo img {
+    transition: transform 0.2s, box-shadow 0.2s;
+    transform-style: preserve-3d; /* Essential for 3D rotation */
+    display: block; /* To ensure img behaves as expected */
 }
 
 /* Medium devices (tablets, 600px and up) */
@@ -121,4 +138,24 @@ header {
 
 #playbackControls {
     /* Any specific styles for playback controls */
+}
+
+
+.hidden {
+    display: none;
+}
+
+.interaction-section {
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.record-controls, .file-upload-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }

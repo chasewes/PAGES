@@ -8,7 +8,10 @@
 </head>
 <body>
     <header>
-        <h1>P.A.G.E.S Page</h1>
+        <h1 style="display: flex; align-items: center;">
+            <img src="./static/images/PAGES_Icon.png" alt="PAGES Icon" style="height: 50px; margin-right: 10px;">
+            P.A.G.E.S Page
+        </h1>
     </header>
     <section id="demosSection">
         <div id="audioPlayerContainer">
@@ -39,20 +42,27 @@
             </div>
         </section>
     </section>
-    <section id="recordYourself">
-        <h2>Record Yourself</h2>
-        <button id="recordBtn">Start Recording</button>
-        <button id="stopRecordBtn" disabled>Stop Recording</button>
-        <div id="recordingStatus">Not recording</div>
-        <audio id="recordedAudio" controls hidden></audio>
-    </section>
-    <!-- File Upload Section -->
-    <section id="fileUploadSection">
-        <h2>Upload Your Recording</h2>
-        <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-            <input type="file" name="audioFile" id="audioFile">
-            <button type="submit">Upload File</button>
-        </form>
+    <section id="userInteractions">
+        <div id="recordYourself" class="interaction-section">
+            <h2>Record Yourself</h2>
+            <div class="record-controls">
+                <button id="recordBtn">Start Recording</button>
+                <button id="stopRecordBtn" disabled>Stop Recording</button>
+                <div id="recordingStatus">Not recording</div>
+            </div>
+            <audio id="recordedAudio" controls hidden></audio>
+        </div>
+        
+        <!-- File Upload Section -->
+        <div id="fileUploadSection" class="interaction-section">
+            <h2>Upload Your Recording</h2>
+            <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                <div class="file-upload-controls">
+                    <input type="file" name="audioFile" id="audioFile">
+                    <button type="submit">Upload File</button>
+                </div>
+            </form>
+        </div>
     </section>
     <section id="howItWorks">
 <!--              <h2>How It Works</h2> -->

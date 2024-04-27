@@ -208,13 +208,13 @@ class Music_Gen_Pipeline():
         chunks = group_chunks(chunks, desired_lengths=desired_lengths, max_length=max_length)
         return chunks, result['text']
         
-    def sections_to_prompts(self, word_sections, flush_extractor=False, verbose=None):
+    def sections_to_prompts(self, word_sections, flush_extractor=False, verbose=None, **kwargs):
         verbose = verbose if verbose is not None else self.verbose
         
         print(word_sections)
         
         # Extract JSON Info
-        prompts, durations= self.extractor.generate_from_chunks(word_sections)
+        prompts, durations= self.extractor.generate_from_chunks(word_sections, verbose=verbose, **kwargs)
         
         print(prompts)
         
@@ -226,7 +226,7 @@ class Music_Gen_Pipeline():
         
         save_file_loc = kwargs.get('save_file_loc', None)
         if save_file_loc is not None:
-            if os.path.isdir(save_file_loc):
+            if os.path.isdir(save_file_loc):                
                 base_name = os.path.basename(save_file_loc).split('.')[0] + '.wav'
                 save_file_loc = os.path.join(save_file_loc, base_name)
             self.generator.save_audio(save_file_loc)
@@ -269,15 +269,25 @@ class Music_Gen_Pipeline():
                                               desired_lengths=DESIRED_CHUNK_LEN)
         
         print("Extracting Info from chunks")
-        prompts, durations = self.sections_to_prompts(chunks)
+        prompts, durations = self.sections_to_prompts(chunks, **kwargs)
         print(prompts)
         
-        save_info_loc = kwargs.get('save_info_loc', None)
+        save_info_loc = kwargs.get('save_e_info_loc', None)
         if save_info_loc is not None:
             # info_preped = [p.__dict__ for p in info]
-            info_preped = [p.to_dict() for p in info]
+            # info_preped = [p.to_dict() for p in self.extractor.info]
+            info_preped = self.extractor.info
+            
+            prepped_output = {'chunks': chunks, 
+                              'info': info_preped,
+                              'prompts': prompts, 
+                              'durations': durations, 
+                              }
+            
             with open(save_info_loc, 'w') as f:
-                json.dump(info_preped, f)
+                # json.dump(info_preped, f)
+                json.dump(prepped_output, f)
+                
         
         print("Generating Music from prompts")
         
