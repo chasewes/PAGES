@@ -31,8 +31,11 @@ import os
 # import re
 # import io
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(device)
+device = "cuda" if torch.cuda.is_available() else 'mps' if torch.backends.mps.is_available() else 'cpu'
+device = torch.device(device)
+
+print('Pipeline Device:', device)
+print('Hint: We want this to be cuda or mps')
 
 
 # Parameters for Audio Chunking and Music Duration Generation:
