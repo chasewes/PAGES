@@ -6,8 +6,7 @@ import json
 from LLMPromptConstraints import MusicGenInfo
 import re 
 
-# MODEL_NAME = "meta-llama/Meta-Llama-3-8B" # 'meta-llama/Llama-2-7b-hf' #
-MODEL_NAME = "TheBloke/Llama-2-7B-GGML"
+MODEL_NAME = "meta-llama/Meta-Llama-3-8B" # 'meta-llama/Llama-2-7b-hf' #
 HUGGINGFACE_TOKEN = None # YOUR HF TOKEN HERE
 
 class LLMPromptGenerator:
