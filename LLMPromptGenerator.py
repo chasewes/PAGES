@@ -6,7 +6,9 @@ import json
 from LLMPromptConstraints import MusicGenInfo
 import re 
 
-MODEL_NAME = 'meta-llama/Llama-2-7b-hf' # "meta-llama/Meta-Llama-3-8B"
+# MODEL_NAME = "meta-llama/Meta-Llama-3-8B" # 'meta-llama/Llama-2-7b-hf' #
+MODEL_NAME = "TheBloke/Llama-2-7B-GGML"
+HUGGINGFACE_TOKEN = None # YOUR HF TOKEN HERE
 
 class LLMPromptGenerator:
     def __init__(self, model_name=MODEL_NAME): # device="cpu"
@@ -14,7 +16,10 @@ class LLMPromptGenerator:
         print('model_name:', model_name)
     
         self.model_name = model_name
-        self.hf_pipeline = pipeline('text-generation', model=model_name, device_map='auto', trust_remote_code=True, token='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') # device=device)
+        if HUGGINGFACE_TOKEN is None:
+            self.hf_pipeline = pipeline('text-generation', model=model_name, device_map='auto', trust_remote_code=True, token=HUGGINGFACE_TOKEN) # device=device)
+        else:
+            self.hf_pipeline = pipeline('text-generation', model=model_name, device_map='auto', trust_remote_code=True)
         self.info = []
         self.prompts = []
         self.long_term_prompt = None
