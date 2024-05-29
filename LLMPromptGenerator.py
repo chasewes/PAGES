@@ -7,7 +7,7 @@ from LLMPromptConstraints import MusicGenInfo
 import re 
 
 MODEL_NAME = "meta-llama/Meta-Llama-3-8B" # 'meta-llama/Llama-2-7b-hf' #
-HUGGINGFACE_TOKEN = None # YOUR HF TOKEN HERE
+HUGGINGFACE_TOKEN = None # "hf_[...]"" # YOUR HF TOKEN HERE
 
 class LLMPromptGenerator:
     def __init__(self, model_name=MODEL_NAME): # device="cpu"
