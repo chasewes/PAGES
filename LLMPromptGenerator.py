@@ -1,4 +1,4 @@
-from pydantic import BaseModel, parse_obj_as
+# from pydantic import BaseModel, parse_obj_as
 from lmformatenforcer import JsonSchemaParser
 from lmformatenforcer.integrations.transformers import build_transformers_prefix_allowed_tokens_fn
 from transformers import pipeline
@@ -114,7 +114,7 @@ class LLMPromptGenerator:
             #some logic to determine when to flush could go here. 
             
             #generate the prompt and add it to the list
-            prompts.append(self.generate_musicgen_prompt(chunk['text'], flush=flush))
+            prompts.append(self.generate_musicgen_prompt(chunk['text'], music_gen_info=music_gen_info, flush=flush))
             durations.append(float(chunk['duration']))
         
         # self.prompts.extend(prompts)
