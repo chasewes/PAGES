@@ -1,33 +1,29 @@
 from LLMPromptGenerator import LLMPromptGenerator#, DetailedInfo
 from GenMusicFromPrompt import GenMusicFromPrompt
-# from LLMPromptConstraints import MusicGenInfo
 
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+import torch
+from tqdm import tqdm
+import json
+import numpy as np
+import os
+
+## Old Imports and packages used in other parts of the code
+# from LLMPromptConstraints import MusicGenInfo
 # from audiocraft.models import MusicGen
 # from audiocraft.models import MultiBandDiffusion
 # from audiocraft.utils.notebook import display_audio
-
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
-
-
 # import math
 # import torchaudio
-import torch
 # from audiocraft.utils.notebook import display_audio
-from tqdm import tqdm
-import json
 # import random
-
 # from datasets import load_dataset
 # from audiocraft.data.audio_utils import convert_audio
 # import time
-import numpy as np
 # from datasets import Dataset, Audio
-
 # import tempfile
 # import librosa
 # from pydub import AudioSegment
-
-import os
 # import re
 # import io
 
@@ -52,7 +48,7 @@ PREV_SONG_DUR = 2 # 4
 
 MAX_GROUP_CNT = 3
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 class Music_Gen_Pipeline():
     
