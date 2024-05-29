@@ -11,7 +11,6 @@ HUGGINGFACE_TOKEN = None # YOUR HF TOKEN HERE
 
 class LLMPromptGenerator:
     def __init__(self, model_name=MODEL_NAME): # device="cpu"
-    # def __init__(self, model_name="microsoft/Phi-3-mini-128k-instruct"): # device="cpu"
         print('model_name:', model_name)
     
         self.model_name = model_name
